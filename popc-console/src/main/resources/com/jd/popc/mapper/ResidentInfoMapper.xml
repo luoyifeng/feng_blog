@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.ResidentInfoMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.residentinfo.domain.ResidentInfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="resident_name" jdbcType="VARCHAR" property="residentName"/>
+        <result column="resident_id_type" jdbcType="VARCHAR" property="residentIdType"/>
+        <result column="resident_id" jdbcType="VARCHAR" property="residentId"/>
+        <result column="birth_date" jdbcType="VARCHAR" property="birthDate"/>
+        <result column="resident_sex" jdbcType="VARCHAR" property="residentSex"/>
+        <result column="resident_type" jdbcType="VARCHAR" property="residentType"/>
+        <result column="house_number" jdbcType="VARCHAR" property="houseNumber"/>
+        <result column="relat_2_landlord" jdbcType="VARCHAR" property="relat2Landlord"/>
+        <result column="census_register" jdbcType="VARCHAR" property="censusRegister"/>
+        <result column="contact_info" jdbcType="VARCHAR" property="contactInfo"/>
+        <result column="habitant_address" jdbcType="VARCHAR" property="habitantAddress"/>
+        <result column="address_match_status" jdbcType="TINYINT" property="addressMatchStatus"/>
+        <result column="property_right_certificate" jdbcType="VARCHAR" property="propertyRightCertificate"/>
+        <result column="criminal_info" jdbcType="VARCHAR" property="criminalInfo"/>
+        <result column="company_info" jdbcType="VARCHAR" property="companyInfo"/>
+        <result column="company_address" jdbcType="VARCHAR" property="companyAddress"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="data_flag" jdbcType="TINYINT" property="dataFlag"/>
+        <result column="pro_coll_id" jdbcType="BIGINT" property="proCollId"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, resident_name, resident_id_type, resident_id, birth_date, resident_sex, resident_type,
+        house_number, relat_2_landlord, census_register, contact_info, habitant_address,
+        address_match_status, property_right_certificate, criminal_info, company_info, company_address,
+        create_time, update_time, data_flag, pro_coll_id
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_resident_base_info
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.residentinfo.model.ResidentInfoRequest" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_resident_base_info
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="residentName != null and residentName != ''">
+                AND resident_name LIKE CONCAT('%', #{residentName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="residentId != null and residentId != ''">
+                AND resident_id = #{residentId,jdbcType=VARCHAR}
+            </if>
+            <if test="censusRegister != null and censusRegister != ''">
+                AND census_register LIKE CONCAT('%', #{censusRegister,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="habitantAddress != null and habitantAddress != ''">
+                AND habitant_address LIKE CONCAT('%', #{habitantAddress,jdbcType=VARCHAR}, '%')
+            </if>
+            <!-- <if test="specialMarks != null and specialMarks.size() > 0">
+                AND special_mark IN
+                <foreach item='specialMark' index='index' collection='specialMarks' open='(' separator=',' close=')'>
+                    #{specialMark,jdbcType=VARCHAR}
+                </foreach>
+            </if> -->
+        </trim>
+        limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+    </select>
+
+    <select id="queryCountByCondition" parameterType="com.jd.service.residentinfo.model.ResidentInfoRequest" resultType="java.lang.Integer">
+        select
+        count(*)
+        from app_resident_base_info
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="residentName != null and residentName != ''">
+                AND resident_name LIKE CONCAT('%', #{residentName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="residentId != null and residentId != ''">
+                AND resident_id = #{residentId,jdbcType=VARCHAR}
+            </if>
+            <if test="censusRegister != null and censusRegister != ''">
+                AND census_register LIKE CONCAT('%', #{censusRegister,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="habitantAddress != null and habitantAddress != ''">
+                AND habitant_address LIKE CONCAT('%', #{habitantAddress,jdbcType=VARCHAR}, '%')
+            </if>
+            <!-- <if test="specialMarks != null and specialMarks.size() > 0">
+                AND special_mark IN
+                <foreach item='specialMark' index='index' collection='specialMarks' open='(' separator=',' close=')'>
+                    #{specialMark,jdbcType=VARCHAR}
+                </foreach>
+            </if> -->
+        </trim>
+    </select>
+
+    <insert id="insert" parameterType="com.jd.service.residentinfo.domain.ResidentInfo">
+        <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_resident_base_info (id, resident_name, resident_id_type,
+        resident_id, birth_date, resident_sex,
+        resident_type, house_number, relat_2_landlord,
+        census_register, contact_info, habitant_address,
+        address_match_status, property_right_certificate,
+        criminal_info, company_info, company_address,
+        create_time, update_time, data_flag
+        )
+        values (#{id,jdbcType=BIGINT}, #{residentName,jdbcType=VARCHAR}, #{residentIdType,jdbcType=VARCHAR},
+        #{residentId,jdbcType=VARCHAR}, #{birthDate,jdbcType=VARCHAR}, #{residentSex,jdbcType=VARCHAR},
+        #{residentType,jdbcType=VARCHAR}, #{houseNumber,jdbcType=VARCHAR}, #{relat2Landlord,jdbcType=VARCHAR},
+        #{censusRegister,jdbcType=VARCHAR}, #{contactInfo,jdbcType=VARCHAR}, #{habitantAddress,jdbcType=VARCHAR},
+        #{addressMatchStatus,jdbcType=TINYINT}, #{propertyRightCertificate,jdbcType=VARCHAR},
+        #{criminalInfo,jdbcType=VARCHAR}, #{companyInfo,jdbcType=VARCHAR}, #{companyAddress,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{dataFlag,jdbcType=TINYINT}
+        )
+    </insert>
+
+</mapper>

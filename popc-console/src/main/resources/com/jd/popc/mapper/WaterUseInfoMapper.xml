@@ -1,0 +1,589 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.WaterUseInfoMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.wateruse.domain.WaterUseInfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <id column="pro_coll_id" jdbcType="BIGINT" property="proCollId"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+        <result column="community_district" jdbcType="VARCHAR" property="communityDistrict"/>
+        <result column="apartment_num" jdbcType="VARCHAR" property="apartmentNum"/>
+        <result column="house_unit" jdbcType="VARCHAR" property="houseUnit"/>
+        <result column="room_num" jdbcType="VARCHAR" property="roomNum"/>
+        <result column="house_status" jdbcType="VARCHAR" property="houseStatus"/>
+        <result column="landlord_name" jdbcType="VARCHAR" property="landlordName"/>
+        <result column="landlord_id" jdbcType="VARCHAR" property="landlordId"/>
+        <result column="landlord_phone" jdbcType="VARCHAR" property="landlordPhone"/>
+        <result column="previous_water_consumption" jdbcType="VARCHAR" property="previousWaterConsumption"/>
+        <result column="current_water_consumption" jdbcType="VARCHAR" property="currentWaterConsumption"/>
+        <result column="avg_water_consumption" jdbcType="VARCHAR" property="avgWaterConsumption"/>
+        <result column="month_on_month_growth" jdbcType="VARCHAR" property="monthOnMonthGrowth"/>
+        <result column="coefficient_variation" jdbcType="VARCHAR" property="coefficientVariation"/>
+        <result column="standard_score" jdbcType="VARCHAR" property="standardScore"/>
+        <!--<result column="year_standard_deviation" jdbcType="VARCHAR" property="yearStandardDeviation"/>
+        <result column="quartile" jdbcType="VARCHAR" property="quartile"/>-->
+        <result column="officer_no" jdbcType="VARCHAR" property="officerNo"/>
+        <result column="judge_abnormal_time" jdbcType="VARCHAR" property="judgeAbnormalTime"/>
+        <result column="house_water_status" jdbcType="VARCHAR" property="houseWaterStatus"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="dt" jdbcType="VARCHAR" property="dt"/>
+        <result column="house_special_mark" jdbcType="VARCHAR" property="houseSpecialMark"/>
+        <result column="shopping_times" jdbcType="BIGINT" property="shoppingTimes"/>
+        <!--<result column="special_goods" jdbcType="VARCHAR" property="specialGoods"/>-->
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, pro_coll_id, community_name, community_district, apartment_num, house_unit, room_num, house_status,
+        landlord_name, landlord_id, landlord_phone, previous_water_consumption, current_water_consumption,
+        avg_water_consumption, month_on_month_growth, coefficient_variation, standard_score, officer_no,
+        judge_abnormal_time, house_water_status, create_time, update_time, dt,shopping_times,house_special_mark
+        /*, year_standard_deviation, quartile*/
+    </sql>
+
+    <sql id="WhereCondition">
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <!--<if test="id != null">
+                AND id = #{id,jdbcType=BIGINT}
+            </if>-->
+            AND house_water_status != '异常'
+            AND landlord_name != '' AND landlord_name != 'N'
+            AND landlord_id != '' AND landlord_id != 'N'
+            AND position('L' in community_district) = 0
+            <if test="proCollId != null">
+                AND pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+            <if test="houseStatus != null and houseStatus != ''">
+                AND house_status = #{houseStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="monthOnMonthGrowth != null and monthOnMonthGrowth != ''">
+                AND month_on_month_growth >= CAST(#{monthOnMonthGrowth,jdbcType=VARCHAR} AS DECIMAL(20, 10))
+            </if>
+            <if test="houseWaterStatus != null and houseWaterStatus != ''">
+                AND house_water_status = #{houseWaterStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="coefficientVariation != null and coefficientVariation != ''">
+                AND coefficient_variation >= CAST(#{coefficientVariation,jdbcType=VARCHAR} AS DECIMAL(20, 10))
+            </if>
+            <if test="standardScore != null and standardScore != ''">
+                AND standard_score >= CAST(#{standardScore,jdbcType=VARCHAR} AS DECIMAL(20, 10))
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND (dt = #{startDate, jdbcType=VARCHAR} OR dt = #{endDate, jdbcType=VARCHAR})
+            </if>
+            <if test="communityNames != null and communityNames.size() > 0">
+                AND community_name IN
+                <foreach item='communityName' index='index' collection='communityNames' open='(' separator=','
+                         close=')'>
+                    #{communityName,jdbcType=VARCHAR}
+                </foreach>
+            </if>
+            <if test='suspectRent != null and suspectRent == "是"'>
+                AND previous_water_consumption = 0.0 AND current_water_consumption > 0.0
+            </if>
+            <if test='suspectRent != null and suspectRent == "否"'>
+                AND previous_water_consumption > 0.0
+            </if>
+            <if test='houseSpecialMark != null and houseSpecialMark == "无"'>
+                AND (house_special_mark is null OR house_special_mark = '无' OR house_special_mark = '')
+            </if>
+            <if test="houseSpecialMarkList != null and houseSpecialMarkList.size() > 0">
+                AND
+                <foreach item='houseSpecialMark' index='index' collection='houseSpecialMarkList' open='(' separator='AND'
+                         close=')'>
+                    house_special_mark like CONCAT('%', #{houseSpecialMark,jdbcType=VARCHAR}, '%')
+                </foreach>
+            </if>
+            <if test='emptyShopping != null and emptyShopping == "空房购物"'>
+                AND house_status = '空置' AND shopping_times > 0
+            </if>
+            <!--<if test='specialGoods != null and specialGoods == "购买特殊物品"'>-->
+                <!--AND special_goods != '无' AND special_goods != '' AND special_goods is not null-->
+            <!--</if>-->
+
+        </trim>
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_house_water_using_info
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.wateruse.model.WaterUseInfoQuery"
+            resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_house_water_using_info
+        <include refid="WhereCondition"/>
+        ORDER BY community_name,apartment_num+0
+        limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+    </select>
+
+    <!--针对于定时任务获取用水信息-->
+    <select id="queryWaterInfoForInit" parameterType="com.jd.service.wateruse.model.WaterUseInfoQuery" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_house_water_using_info group by pro_coll_id
+        limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+    </select>
+    <!--针对于定时任务获取总共的用水信息数目-->
+    <select id="queryWaterInfoCountForInit" resultType="java.lang.Integer">
+        select count(*)
+        from app_house_water_using_info
+    </select>
+
+    <!--查询异常信息-->
+    <select id="queryIdsByAbnomalCondition" parameterType="com.jd.service.wateruse.domain.WaterUseInfoException"
+            resultType="java.lang.Long">
+        select
+        id
+        from app_house_water_using_info
+        <where>
+            <if test="landlord == 1 and currentWaterConsumption == 0">
+                AND (landlord_name is null OR landlord_name = '' OR landlord_name = 'N'
+                OR landlord_id is null OR landlord_id = '' OR landlord_id = 'N') AND house_water_status != '异常' AND
+                (current_water_consumption is not null AND current_water_consumption != '' AND current_water_consumption != 'N')
+            </if>
+            <if test="landlord == 0 and currentWaterConsumption == 1">
+                AND (landlord_name is not null AND landlord_name != '' AND landlord_name != 'N'
+                AND landlord_id is not null AND landlord_id != '' AND landlord_id != 'N') AND house_water_status != '异常' AND
+                (current_water_consumption is null OR current_water_consumption = '' OR current_water_consumption = 'N')
+            </if>
+            <if test="landlord == 1 and currentWaterConsumption == 1">
+                AND (landlord_name is null OR landlord_name = '' OR landlord_name = 'N'
+                OR landlord_id is null OR landlord_id = '' OR landlord_id = 'N') AND house_water_status != '异常' AND
+                (current_water_consumption is null OR current_water_consumption = '' OR current_water_consumption = 'N')
+            </if>
+            <if test="startDate != null and endDate != null">
+                AND (dt = #{startDate, jdbcType=VARCHAR} OR dt = #{endDate, jdbcType=VARCHAR})
+            </if>
+        </where>
+    </select>
+
+    <select id="queryCountByCondition" parameterType="com.jd.service.wateruse.model.WaterUseInfoQuery"
+            resultType="java.lang.Integer">
+        select
+        count(*)
+        from app_house_water_using_info
+        <include refid="WhereCondition"/>
+    </select>
+
+    <select id="queryWaterTrendByProCollId" parameterType="java.lang.Long"
+            resultType="com.jd.service.wateruse.model.WaterTrend">
+        SELECT DATE_FORMAT(STR_TO_DATE(dt, '%Y-%m'), '%Y-%m') AS 'date', current_water_consumption AS 'consumption'
+        FROM app_house_water_using_info
+        WHERE pro_coll_id = #{proCollId,jdbcType=BIGINT} AND (STR_TO_DATE(dt, '%Y-%m') BETWEEN DATE_SUB(NOW(), INTERVAL 1 YEAR) AND NOW())
+        GROUP BY dt
+    </select>
+
+    <select id="hasRecordsByCurrentMonth" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_house_water_using_info
+        where dt = DATE_FORMAT(NOW(), '%Y-%m')
+        limit 1
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from app_house_water_using_info
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.jd.service.wateruse.domain.WaterUseInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_house_water_using_info (id, pro_coll_id,community_name, community_district,
+        apartment_num, house_unit, room_num,
+        house_status, landlord_name, landlord_id,
+        landlord_phone, previous_water_consumption,
+        current_water_consumption, avg_water_consumption,
+        month_on_month_growth,
+        coefficient_variation, standard_score,
+        officer_no, judge_abnormal_time, house_water_status,
+        create_time, update_time, dt
+        )
+        values (#{id,jdbcType=BIGINT}, #{proCollId,jdbcType=BIGINT},#{communityName,jdbcType=VARCHAR},
+        #{communityDistrict,jdbcType=VARCHAR},
+        #{apartmentNum,jdbcType=VARCHAR}, #{houseUnit,jdbcType=VARCHAR}, #{roomNum,jdbcType=VARCHAR},
+        #{houseStatus,jdbcType=VARCHAR}, #{landlordName,jdbcType=VARCHAR}, #{landlordId,jdbcType=VARCHAR},
+        #{landlordPhone,jdbcType=VARCHAR}, #{previousWaterConsumption,jdbcType=VARCHAR},
+        #{currentWaterConsumption,jdbcType=VARCHAR}, #{avgWaterConsumption,jdbcType=VARCHAR},
+        #{monthOnMonthGrowth,jdbcType=VARCHAR},
+        #{coefficientVariation,jdbcType=VARCHAR}, #{standardScore,jdbcType=VARCHAR},
+        #{officerNo,jdbcType=VARCHAR}, #{judgeAbnormalTime,jdbcType=VARCHAR}, #{houseWaterStatus,jdbcType=VARCHAR},
+        #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{dt,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.wateruse.domain.WaterUseInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_house_water_using_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="proCollId != null">
+                pro_coll_id,
+            </if>
+            <if test="communityName != null">
+                community_name,
+            </if>
+            <if test="communityDistrict != null">
+                community_district,
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num,
+            </if>
+            <if test="houseUnit != null">
+                house_unit,
+            </if>
+            <if test="roomNum != null">
+                room_num,
+            </if>
+            <if test="houseStatus != null">
+                house_status,
+            </if>
+            <if test="landlordName != null">
+                landlord_name,
+            </if>
+            <if test="landlordId != null">
+                landlord_id,
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone,
+            </if>
+            <if test="previousWaterConsumption != null">
+                previous_water_consumption,
+            </if>
+            <if test="currentWaterConsumption != null">
+                current_water_consumption,
+            </if>
+            <if test="avgWaterConsumption != null">
+                avg_water_consumption,
+            </if>
+            <if test="monthOnMonthGrowth != null">
+                month_on_month_growth,
+            </if>
+            <!--<if test="yearStandardDeviation != null">
+                year_standard_deviation,
+            </if>
+            <if test="quartile != null">
+                quartile,
+            </if>-->
+            <if test="coefficientVariation != null">
+                coefficient_variation,
+            </if>
+            <if test="standardScore != null">
+                standard_score,
+            </if>
+            <if test="officerNo != null">
+                officer_no,
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time,
+            </if>
+            <if test="houseWaterStatus != null">
+                house_water_status,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="dt != null">
+                dt,
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=BIGINT},
+            <if test="proCollId != null">
+                #{proCollId, jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="previousWaterConsumption != null">
+                #{previousWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="currentWaterConsumption != null">
+                #{currentWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="avgWaterConsumption != null">
+                #{avgWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="monthOnMonthGrowth != null">
+                #{monthOnMonthGrowth,jdbcType=VARCHAR},
+            </if>
+            <!--<if test="yearStandardDeviation != null">
+                #{yearStandardDeviation,jdbcType=VARCHAR},
+            </if>
+            <if test="quartile != null">
+                #{quartile,jdbcType=VARCHAR},
+            </if>-->
+            <if test="coefficientVariation != null">
+                #{coefficientVariation,jdbcType=VARCHAR},
+            </if>
+            <if test="standardScore != null">
+                #{standardScore,jdbcType=VARCHAR},
+            </if>
+            <if test="officerNo != null">
+                #{officerNo,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="houseWaterStatus != null">
+                #{houseWaterStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dt != null">
+                #{dt,jdbcType=VARCHAR},
+            </if>
+            <if test="houseSpecialMark != null">
+                #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByProCollIdKeySelective" parameterType="com.jd.service.wateruse.domain.WaterUseInfo">
+        update app_house_water_using_info
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId, jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="previousWaterConsumption != null">
+                previous_water_consumption = #{previousWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="currentWaterConsumption != null">
+                current_water_consumption = #{currentWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="avgWaterConsumption != null">
+                avg_water_consumption = #{avgWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="monthOnMonthGrowth != null">
+                month_on_month_growth = #{monthOnMonthGrowth,jdbcType=VARCHAR},
+            </if>
+            <!--<if test="yearStandardDeviation != null">
+                year_standard_deviation = #{yearStandardDeviation,jdbcType=VARCHAR},
+            </if>
+            <if test="quartile != null">
+                quartile = #{quartile,jdbcType=VARCHAR},
+            </if>-->
+            <if test="coefficientVariation != null">
+                coefficient_variation = #{coefficientVariation,jdbcType=VARCHAR},
+            </if>
+            <if test="standardScore != null">
+                standard_score = #{standardScore,jdbcType=VARCHAR},
+            </if>
+            <if test="officerNo != null">
+                officer_no = #{officerNo,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="houseWaterStatus != null">
+                house_water_status = #{houseWaterStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dt != null">
+                dt = #{dt,jdbcType=VARCHAR},
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark = #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where pro_coll_id = #{proCollId, jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.wateruse.domain.WaterUseInfo">
+        update app_house_water_using_info
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId, jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="previousWaterConsumption != null">
+                previous_water_consumption = #{previousWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="currentWaterConsumption != null">
+                current_water_consumption = #{currentWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="avgWaterConsumption != null">
+                avg_water_consumption = #{avgWaterConsumption,jdbcType=VARCHAR},
+            </if>
+            <if test="monthOnMonthGrowth != null">
+                month_on_month_growth = #{monthOnMonthGrowth,jdbcType=VARCHAR},
+            </if>
+            <!--<if test="yearStandardDeviation != null">
+                year_standard_deviation = #{yearStandardDeviation,jdbcType=VARCHAR},
+            </if>
+            <if test="quartile != null">
+                quartile = #{quartile,jdbcType=VARCHAR},
+            </if>-->
+            <if test="coefficientVariation != null">
+                coefficient_variation = #{coefficientVariation,jdbcType=VARCHAR},
+            </if>
+            <if test="standardScore != null">
+                standard_score = #{standardScore,jdbcType=VARCHAR},
+            </if>
+            <if test="officerNo != null">
+                officer_no = #{officerNo,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="houseWaterStatus != null">
+                house_water_status = #{houseWaterStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="dt != null">
+                dt = #{dt,jdbcType=VARCHAR},
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark = #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.wateruse.domain.WaterUseInfo">
+        update app_house_water_using_info
+        set pro_coll_id = #{proCollId, jdbcType=BIGINT},community_name = #{communityName,jdbcType=VARCHAR},
+          community_district = #{communityDistrict,jdbcType=VARCHAR},
+          apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+          house_unit = #{houseUnit,jdbcType=VARCHAR},
+          room_num = #{roomNum,jdbcType=VARCHAR},
+          house_status = #{houseStatus,jdbcType=VARCHAR},
+          landlord_name = #{landlordName,jdbcType=VARCHAR},
+          landlord_id = #{landlordId,jdbcType=VARCHAR},
+          landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+          previous_water_consumption = #{previousWaterConsumption,jdbcType=VARCHAR},
+          current_water_consumption = #{currentWaterConsumption,jdbcType=VARCHAR},
+          avg_water_consumption = #{avgWaterConsumption,jdbcType=VARCHAR},
+          month_on_month_growth = #{monthOnMonthGrowth,jdbcType=VARCHAR},
+          coefficient_variation = #{coefficientVariation,jdbcType=VARCHAR},
+          standard_score = #{standardScore,jdbcType=VARCHAR},
+          /*year_standard_deviation = #{yearStandardDeviation,jdbcType=VARCHAR},
+          quartile = #{quartile,jdbcType=VARCHAR},*/
+          officer_no = #{officerNo,jdbcType=VARCHAR},
+          judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+          house_water_status = #{houseWaterStatus,jdbcType=VARCHAR},
+          create_time = #{createTime,jdbcType=TIMESTAMP},
+          update_time = #{updateTime,jdbcType=TIMESTAMP},
+          dt = #{dt,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--查询房屋地址匹配的总id-->
+    <select id="selectProCollIdByAddress" parameterType="com.jd.service.shoppinginfo.domain.ShoppingInfoVo" resultType="Long">
+        select pro_coll_id from app_house_water_using_info where community_name = #{communityName,jdbcType=VARCHAR}
+                and apartment_num = #{apartmentNum,jdbcType=VARCHAR}
+                and house_unit = #{houseUnit,jdbcType=VARCHAR}
+                and room_num = #{roomNum,jdbcType=VARCHAR}
+    </select>
+
+    <!--更新房屋购物次数-->
+    <update id="updateShoppingTime" parameterType="com.jd.service.shoppinginfo.domain.ShoppingInfoVo">
+        update app_house_water_using_info
+        set shopping_times = shopping_times + 1
+        where pro_coll_id = #{proCollId,jdbcType=VARCHAR}
+    </update>
+</mapper>

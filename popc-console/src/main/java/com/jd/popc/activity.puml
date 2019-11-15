@@ -1,0 +1,57 @@
+@startuml
+
+start
+:登录系统;
+fork
+    :用水异常判断;
+    if (有异常用水记录) then (yes)
+        :调查走访管理;
+        if (打印用水异常信息) then (yes)
+           :录入走访核实单;
+           :已处理用水异常;
+        else
+            :未处理用水异常;
+        endif
+    else (no)
+        :正常用水信息;
+    endif
+
+fork again
+    :人口信息查询;
+
+fork again
+    :房屋信息查询;
+    split
+        :房屋基本信息 <
+    split again
+        :房屋生活信息 <
+    split again
+        :调查走访记录 <
+    end split
+
+fork again
+    :小区警员维护;
+    split
+        :查询列表 /
+    split again
+        :警员和小区绑定 /
+    end split
+
+fork again
+    :用户权限管理;
+    split
+        :编辑 |
+    split again
+        :密码重置 |
+    split again
+        :禁用 |
+    split again
+        :删除 |
+    end split
+
+endfork
+
+:退出系统;
+
+stop
+@enduml

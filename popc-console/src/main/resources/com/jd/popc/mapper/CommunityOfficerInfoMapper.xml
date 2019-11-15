@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.CommunityOfficerMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.communityinfo.domain.CommunityInfo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+        <result column="community_region" jdbcType="VARCHAR" property="communityRegion"/>
+        <result column="community_street" jdbcType="VARCHAR" property="communityStreet"/>
+        <result column="community_committee" jdbcType="VARCHAR" property="communityCommittee"/>
+        <result column="community_alias" jdbcType="VARCHAR" property="communityAlias"/>
+        <result column="community_address" jdbcType="VARCHAR" property="communityAddress"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, community_name, community_alias, community_address, create_time
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_community_info
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.communityinfo.model.CommunityOfficerRequest"
+            resultType="com.jd.service.communityinfo.model.CommunityOfficerResponse">
+        select aci.community_region AS communityRegion,aci.community_street AS communityStreet,
+        aci.community_committee AS communityCommittee,aci.id AS communityId,
+        aci.community_name AS communityName, aoi.officer_name AS officerName,
+        aoi.officer_no AS officerNo, aoi.officer_phone AS officerPhone, aoi.id
+        from app_community_info aci LEFT JOIN app_community_officer aco ON aco.community_id = aci.id LEFT JOIN
+        app_officer_info aoi ON aco.officer_id = aoi.id
+        where aci.id in (
+        select t.id from(
+            select distinct aci.id
+            from app_community_info aci LEFT JOIN app_community_officer aco ON aco.community_id = aci.id LEFT JOIN
+            app_officer_info aoi ON aco.officer_id = aoi.id
+            <trim prefix="where" prefixOverrides="AND|OR">
+                <if test="communityName != null and communityName != ''">
+                    AND aci.community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+                </if>
+                <if test="officerNo != null and officerNo != ''">
+                    AND aoi.officer_no = #{officerNo,jdbcType=VARCHAR}
+                </if>
+                <if test="officerName != null and officerName != ''">
+                    AND aoi.officer_name = #{officerName,jdbcType=VARCHAR}
+                </if>
+            </trim>
+            <if test="currentPage != null">
+                limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+            </if>
+            ) as t
+        )
+    </select>
+
+
+    <select id="queryOfficeInfoByCommunityId" parameterType="java.lang.Integer"
+            resultType="com.jd.service.communityinfo.model.OfficerVo">
+        select aoi.id as id , aoi.officer_no as officerNo, aoi.officer_name as officerName ,
+         aoi.officer_phone as officerPhone
+        from app_community_officer aco LEFT JOIN app_officer_info aoi ON aco.officer_id = aoi.id
+          where aco.community_id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <select id="queryCountByCondition" parameterType="com.jd.service.communityinfo.model.CommunityOfficerRequest"
+            resultType="java.lang.Integer">
+        select count(distinct aci.id)
+        from app_community_info aci LEFT JOIN app_community_officer aco ON aco.community_id = aci.id LEFT JOIN
+        app_officer_info aoi ON aco.officer_id = aoi.id
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="communityName != null and communityName != ''">
+                AND aci.community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                AND aoi.officer_no = #{officerNo,jdbcType=VARCHAR}
+            </if>
+            <if test="officerName != null and officerName != ''">
+                AND aoi.officer_name = #{officerName,jdbcType=VARCHAR}
+            </if>
+        </trim>
+    </select>
+
+    <select id="queryCommunityByName" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_community_info
+        <where>
+            <if test="communityName != null and communityName != ''">
+                community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%');
+            </if>
+        </where>
+    </select>
+
+    <select id="queryOfficerByName" parameterType="java.lang.String"
+            resultType="com.jd.service.communityinfo.domain.OfficerInfo">
+        select id, officer_name AS officerName, officer_no AS officerNo, officer_phone AS officerPhone
+        from app_officer_info
+        where deleted = 0 AND status = 0 AND (officer_name LIKE CONCAT('%', #{officerName,jdbcType=VARCHAR}, '%') OR officer_no LIKE CONCAT('%', #{officerNo,jdbcType=VARCHAR}, '%'))
+    </select>
+
+    <update id="detachCommunityOfficerRelation"
+            parameterType="com.jd.service.communityinfo.model.CommunityOfficerRelation">
+        delete from app_community_officer
+        <where>
+            <if test="relation.communityId != null">
+                AND community_id = #{relation.communityId,jdbcType=INTEGER}
+            </if>
+            <if test="relation.officerIds != null and relation.officerIds.size() > 0">
+                AND officer_id IN
+                <foreach item='officerId' index='index' collection='relation.officerIds' open='(' separator=','
+                         close=')'>
+                    #{officerId,jdbcType=INTEGER}
+                </foreach>
+            </if>
+        </where>
+    </update>
+
+    <delete id="deleteCommunityOfficerRelationByCommunityId" parameterType="java.lang.Integer">
+        delete from app_community_officer
+        where community_id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="saveCommunityOfficerRelation"
+            parameterType="com.jd.service.communityinfo.model.CommunityOfficerRelation">
+        insert into app_community_officer(community_id, officer_id) values
+        <foreach item='officerId' index='index' collection='relation.officerIds' separator=",">
+            (#{relation.communityId,jdbcType=INTEGER}, #{officerId,jdbcType=INTEGER})
+        </foreach>
+    </insert>
+
+    <select id="queryOfficerGroupByCommunity" resultType="java.util.Map">
+        SELECT c.community_name AS communityName, GROUP_CONCAT(o.officer_name SEPARATOR ',') AS officers
+        FROM app_community_info c INNER JOIN app_community_officer co ON c.id = co.community_id INNER JOIN app_officer_info o ON co.officer_id = o.id
+        WHERE o.deleted = 0 AND o.status = 0 GROUP BY c.community_name
+    </select>
+
+    <delete id="deleteCommunityInfoByPrimaryKey" parameterType="java.lang.Integer">
+        delete from app_community_info
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insert" parameterType="com.jd.service.communityinfo.domain.CommunityInfo" useGeneratedKeys="true"
+            keyProperty="id">
+        <!--<selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">-->
+        <!--SELECT LAST_INSERT_ID()-->
+        <!--</selectKey>-->
+        insert into app_community_info (id,
+        community_name,community_region,community_street,community_committee,community_alias,
+        community_address, create_time)
+        values (#{id,jdbcType=INTEGER}, #{communityName,jdbcType=VARCHAR},#{communityRegion,jdbcType=VARCHAR},
+        #{communityStreet,jdbcType=VARCHAR},#{communityCommittee,jdbcType=VARCHAR}, #{communityAlias,jdbcType=VARCHAR},
+        #{communityAddress,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.communityinfo.domain.CommunityInfo">
+        <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_community_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="communityName != null">
+                community_name,
+            </if>
+            <if test="communityRegion != null">
+                community_region,
+            </if>
+            <if test="communityStreet != null">
+                community_street,
+            </if>
+            <if test="communityCommittee != null">
+                community_committee,
+            </if>
+            <if test="communityAlias != null">
+                community_alias,
+            </if>
+            <if test="communityAddress != null">
+                community_address,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=INTEGER},
+            <if test="communityName != null">
+                #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityRegion != null">
+                #{communityRegion,jdbcType=VARCHAR},
+            </if>
+            <if test="communityStreet != null">
+                #{communityStreet,jdbcType=VARCHAR},
+            </if>
+            <if test="communityCommittee != null">
+                #{communityCommittee,jdbcType=VARCHAR},
+            </if>
+            <if test="communityAlias != null">
+                #{communityAlias,jdbcType=VARCHAR},
+            </if>
+            <if test="communityAddress != null">
+                #{communityAddress,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+
+    <!--<insert id="saveNewCommunity" parameterType="com.jd.service.communityinfo.model.NewCommunityOfficerRelation">-->
+    <!--<selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">-->
+    <!--SELECT LAST_INSERT_ID()-->
+    <!--</selectKey>-->
+    <!--insert into app_community_inf (id, community_name, community_alias,-->
+    <!--community_address, create_time)-->
+    <!--values (#{id,jdbcType=INTEGER}, #{communityName,jdbcType=VARCHAR}, #{communityAlias,jdbcType=VARCHAR},-->
+    <!--#{communityAddress,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})-->
+    <!--</insert>-->
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.communityinfo.domain.CommunityInfo">
+        update app_community_info
+        <set>
+            <if test="communityRegion != null">
+                community_region = #{communityRegion,jdbcType=VARCHAR},
+            </if>
+            <if test="communityStreet != null">
+                community_street = #{communityStreet,jdbcType=VARCHAR},
+            </if>
+            <if test="communityCommittee != null">
+                community_committee = #{communityCommittee,jdbcType=VARCHAR},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityAlias != null">
+                community_alias = #{communityAlias,jdbcType=VARCHAR},
+            </if>
+            <if test="communityAddress != null">
+                community_address = #{communityAddress,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.communityinfo.domain.CommunityInfo">
+        update app_community_info
+        set community_name = #{communityName,jdbcType=VARCHAR},
+          community_alias = #{communityAlias,jdbcType=VARCHAR},
+          community_address = #{communityAddress,jdbcType=VARCHAR},
+          create_time = #{createTime,jdbcType=TIMESTAMP}
+        where id = #{id,jdbcType=INTEGER}
+     </update>
+</mapper>

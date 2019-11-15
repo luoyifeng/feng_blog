@@ -1,0 +1,62 @@
+@startuml
+
+package "宿迁人口管控系统" {
+
+    folder "小区和警员" {
+        ["小区警员维护"]
+        ["用户权限管理"]
+    }
+
+    folder "房屋及走访" {
+        ["房屋信息查询"]
+        ["用水异常判断"]
+        ["调查走访管理"]
+    }
+
+    ["人口信息查询"]
+}
+
+
+["人口信息查询"] -d-> [ResidentInfo]
+["小区警员维护"] -d-> [CommunityOfficer]
+["用户权限管理"] -d-> [CommunityOfficer]
+["房屋信息查询"] -r-> [HouseInfo]
+["用水异常判断"] -r-> [HouseSurvey]
+["调查走访管理"] -r-> [HouseSurvey]
+
+
+database "MySql" {
+    folder "CommunityOfficer" {
+        [app_community_info]
+        [app_officer_info]
+        [app_community_officer]
+    }
+
+    frame "HouseInfo" {
+        [app_houses_basic_infromation_da]
+        [app_houses_deal_infromation_da]
+        [app_houses_infromation_query_da]
+    }
+
+    frame "HouseSurvey" {
+        [app_house_water_using_info]
+        [app_survey_visit_abnormal_info]
+        [app_survey_visit_check_form]
+    }
+
+    folder "ResidentInfo" {
+        [app_resident_base_info]
+    }
+}
+
+["用水异常判断"] -r-> [房屋及走访信息]
+["调查走访管理"] -r-> [房屋及走访信息]
+["房屋信息查询"] -r-> [房屋及走访信息]
+
+node "房屋及走访信息" {
+    ["房屋基本信息"]
+    ["房屋生活信息"]
+    ["调查走访记录"]
+}
+
+@enduml

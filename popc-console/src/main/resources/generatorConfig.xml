@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+    <context id="mysqlTables" targetRuntime="MyBatis3">
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.200.124:3358/popc?characterEncoding=utf-8"
+                        userId="root"
+                        password="root"/>
+
+        <!--指定生成的类型为java类型，避免数据库中number等类型字段 -->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"/>
+        </javaTypeResolver>
+
+
+        <!--自动生成的实体的存放包路径 -->
+        <javaModelGenerator targetPackage="com.jd.popc.tmp"
+                            targetProject="src\main\java">
+            <property name="enableSubPackages" value="true"/>
+            <!--<property name="trimStrings" value="true"/>-->
+        </javaModelGenerator>
+
+
+        <!--自动生成的 *Mapper.xml 文件存放路径 -->
+        <sqlMapGenerator targetPackage="com.jd.popc.tmp"
+                         targetProject="src\main\java">
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+
+
+        <!--自动生成的 *Mapper.java 存放路径 -->
+        <javaClientGenerator type="XMLMAPPER"
+                             targetPackage="com.jd.popc.tmp"
+                             targetProject="src\main\java">
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+
+
+        <table tableName="app_houses_shopping_society_info" domainObjectName="ShoppingSocietyInfo"
+               enableCountByExample="false" enableUpdateByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="true"
+               selectByExampleQueryId="false">
+            <generatedKey column="ID" sqlStatement="SELECT LAST_INSERT_ID()" identity="false"/>
+        </table>
+
+
+    </context>
+</generatorConfiguration>

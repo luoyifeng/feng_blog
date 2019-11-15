@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.UserRightMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.communityinfo.domain.OfficerInfo">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="officer_name" jdbcType="VARCHAR" property="officerName"/>
+        <result column="officer_no" jdbcType="VARCHAR" property="officerNo"/>
+        <result column="officer_phone" jdbcType="VARCHAR" property="officerPhone"/>
+        <result column="officer_station" jdbcType="VARCHAR" property="officerStation"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="deleted" jdbcType="TINYINT" property="deleted"/>
+        <result column="status" jdbcType="TINYINT" property="status"/>
+        <result column="role" jdbcType="VARCHAR" property="role"/>
+        <result column="menu_ids" jdbcType="VARCHAR" property="menuIds"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, officer_name, officer_no, officer_phone, officer_station, password, deleted, status, role, menu_ids, create_time
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_officer_info
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectByOfficerNo" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_officer_info
+        where officer_no = #{officerNo, jdbcType=VARCHAR} AND deleted = 0 AND status = 0
+        limit 1
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.userright.model.OfficerRequest" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_officer_info
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="officerName != null and officerName != ''">
+                AND officer_name = #{officerName,jdbcType=VARCHAR}
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                AND officer_no = #{officerNo,jdbcType=VARCHAR}
+            </if>
+            <if test="officerStation != null and officerStation != ''">
+                AND officer_station LIKE CONCAT('%', #{officerStation,jdbcType=VARCHAR}, '%'),
+            </if>
+            <if test="1 == 1">
+                AND deleted = 0
+            </if>
+        </trim>
+        limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+    </select>
+
+    <select id="queryCountByCondition" parameterType="com.jd.service.userright.model.OfficerRequest" resultType="java.lang.Integer">
+        select
+        count(*)
+        from app_officer_info
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="officerName != null and officerName != ''">
+                AND officer_name = #{officerName,jdbcType=VARCHAR}
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                AND officer_no = #{officerNo,jdbcType=VARCHAR}
+            </if>
+            <if test="officerStation != null and officerStation != ''">
+                AND officer_station LIKE CONCAT('%', #{officerStation,jdbcType=VARCHAR}, '%'),
+            </if>
+            <if test="1 == 1">
+                AND deleted = 0
+            </if>
+        </trim>
+    </select>
+
+    <update id="updateById" parameterType="com.jd.service.userright.model.OfficerRequest">
+        update app_officer_info
+        <trim prefix="set" suffixOverrides=",">
+            <if test="deleted != null">
+                deleted = #{deleted,jdbcType=TINYINT},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=TINYINT},
+            </if>
+        </trim>
+        where id = #{id, jdbcType=INTEGER}
+    </update>
+
+    <insert id="insertSelective" parameterType="com.jd.service.communityinfo.model.OfficerVo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_officer_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="officerName != null and officerName != ''">
+                officer_name,
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                officer_no,
+            </if>
+            <if test="officerPhone != null and officerPhone != ''">
+                officer_phone,
+            </if>
+            <if test="officerStation != null and officerStation != ''">
+                officer_station,
+            </if>
+            <if test="menuIds != null and menuIds != ''">
+                menu_ids,
+            </if>
+            <if test="password != null and password != ''">
+                password,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=INTEGER},
+            <if test="officerName != null and officerName != ''">
+                #{officerName,jdbcType=VARCHAR},
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                #{officerNo,jdbcType=VARCHAR},
+            </if>
+            <if test="officerPhone != null and officerPhone != ''">
+                #{officerPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="officerStation != null and officerStation != ''">
+                #{officerStation,jdbcType=VARCHAR},
+            </if>
+            <if test="menuIds != null and menuIds != ''">
+                #{menuIds,jdbcType=VARCHAR},
+            </if>
+            <if test="password != null and password != ''">
+                #{password,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.communityinfo.model.OfficerVo">
+        update app_officer_info
+        <set>
+            <if test="officerName != null and officerName != ''">
+                officer_name = #{officerName,jdbcType=VARCHAR},
+            </if>
+            <if test="officerNo != null and officerNo != ''">
+                officer_no = #{officerNo,jdbcType=VARCHAR},
+            </if>
+            <if test="officerPhone != null and officerPhone != ''">
+                officer_phone = #{officerPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="officerStation != null and officerStation != ''">
+                officer_station = #{officerStation,jdbcType=VARCHAR},
+            </if>
+            <if test="menuIds != null and menuIds != ''">
+                menu_ids = #{menuIds,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="resetPassword">
+        update app_officer_info
+        set password = #{pwd, jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updatePasswordByOfficerNo">
+        update app_officer_info
+        set password = #{newPwd, jdbcType=VARCHAR}
+        where officer_no = #{officerNo,jdbcType=VARCHAR}
+    </update>
+
+</mapper>

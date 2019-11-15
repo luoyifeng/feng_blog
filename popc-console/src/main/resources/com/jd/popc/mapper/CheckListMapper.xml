@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.CheckListMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.surveyvisit.domain.CheckForm">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="abnormal_info_id" jdbcType="BIGINT" property="abnormalInfoId"/>
+        <result column="lodge_person" jdbcType="VARCHAR" property="lodgePerson"/>
+        <result column="house_rent" jdbcType="VARCHAR" property="houseRent"/>
+        <result column="other_reason" jdbcType="VARCHAR" property="otherReason"/>
+        <result column="check_person" jdbcType="VARCHAR" property="checkPerson"/>
+        <result column="visit_person" jdbcType="VARCHAR" property="visitPerson"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="Judge_danger" jdbcType="VARCHAR" property="judgeDanger"/>
+        <result column="person_danger" jdbcType="VARCHAR" property="personDanger"/>
+        <result column="house_danger" jdbcType="VARCHAR" property="houseDanger"/>
+        <result column="house_status" jdbcType="VARCHAR" property="houseStatus"/>
+        <result column="person_other_danger" jdbcType="VARCHAR" property="personOtherDanger"/>
+        <result column="house_other_danger" jdbcType="VARCHAR" property="houseOtherDanger"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, abnormal_info_id, lodge_person, house_rent, other_reason, check_person, visit_person,
+        create_time, update_time, person_danger, house_danger, Judge_danger, person_other_danger,
+        house_other_danger, house_status
+    </sql>
+
+    <sql id="WhereCondition">
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="abnormalInfoId != null">
+                AND abnormal_info_id = #{abnormalInfoId,jdbcType=BIGINT}
+            </if>
+            <if test="createTime != null and createTime != ''">
+                AND DATE_FORMAT(create_time, '%Y-%m-%d') = DATE_FORMAT(#{createTime,jdbcType=VARCHAR}, '%Y-%m-%d')
+            </if>
+            <if test="judgeDanger != null and judgeDanger != ''">
+                AND Judge_danger = #{udgeDanger,jdbcType=VARCHAR}
+            </if>
+            <if test="checkPerson != null and checkPerson != ''">
+                AND check_person LIKE CONCAT('%', #{checkPerson,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="visitPerson != null and visitPerson != ''">
+                AND visit_person LIKE CONCAT('%', #{visitPerson,jdbcType=VARCHAR}, '%')
+            </if>
+        </trim>
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_check_form
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryByabnormalInfoIdList" parameterType="com.jd.service.surveyvisit.domain.CheckForm"
+            resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_check_form
+        where
+        1 = 1
+        <if test="abnormalInfoIds != null and abnormalInfoIds.size() > 0">
+            AND abnormal_info_id in
+            <foreach item='abnormalInfoId' index='' collection='abnormalInfoIds' open='(' separator=',' close=')'>
+                #{abnormalInfoId,jdbcType=BIGINT}
+            </foreach>
+        </if>
+        <if test="createTime != null">
+            AND DATE_FORMAT(create_time, '%Y-%m-%d') = DATE_FORMAT(#{createTime,jdbcType=TIMESTAMP}, '%Y-%m-%d')
+        </if>
+        <if test="judgeDanger != null and udgeDanger != ''">
+            AND Judge_danger = #{judgeDanger,jdbcType=VARCHAR}
+        </if>
+        <if test="checkPerson != null and checkPerson != ''">
+            AND check_person LIKE CONCAT('%', #{checkPerson,jdbcType=VARCHAR}, '%')
+        </if>
+        <if test="visitPerson != null and visitPerson != ''">
+            AND visit_person LIKE CONCAT('%', #{visitPerson,jdbcType=VARCHAR}, '%')
+        </if>
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.surveyvisit.domain.CheckForm" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_check_form
+        <include refid="WhereCondition"/>
+        <if test="currentPage != null">
+            limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <select id="queryAllFeedbackById" resultMap="BaseResultMap">
+        select af.id, af.abnormal_info_id, af.lodge_person, af.house_rent, af.other_reason, af.check_person,
+        af.visit_person, af.create_time, af.update_time,
+        af.Judge_danger,af.person_danger,af.house_danger, af.person_other_danger, af.house_other_danger, af.house_status
+        from app_survey_visit_check_form af INNER JOIN app_survey_visit_abnormal_info ai ON af.abnormal_info_id = ai.id
+        <where>
+            <if test="auditConfirm == 1">
+                AND af.audit_confirm=1
+            </if>
+            <if test="proCollId != null">
+                AND ai.pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+        </where>
+        ORDER BY af.create_time DESC
+        <if test="!queryAll">
+            limit 1
+        </if>
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from app_survey_visit_check_form
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <select id="queryTotalVisits" resultType="java.lang.Integer">
+        select count(*) from app_survey_visit_abnormal_info where solve_status = 0
+    </select>
+
+
+    <insert id="insert" parameterType="com.jd.service.surveyvisit.domain.CheckForm">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_survey_visit_check_form (id, abnormal_info_id, lodge_person,
+        house_rent, other_reason, check_person,
+        visit_person, create_time, update_time,
+        person_danger, house_danger, Judge_danger,
+        person_other_danger, house_other_danger, house_status,audit_confirm
+        )
+        values (#{id,jdbcType=BIGINT}, #{abnormalInfoId,jdbcType=BIGINT}, #{lodgePerson,jdbcType=VARCHAR},
+        #{houseRent,jdbcType=VARCHAR}, #{otherReason,jdbcType=VARCHAR}, #{checkPerson,jdbcType=VARCHAR},
+        #{visitPerson,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP},
+        #{personDanger,jdbcType=VARCHAR}, #{houseDanger,jdbcType=VARCHAR}, #{judgeDanger,jdbcType=VARCHAR},
+        #{personOtherDanger,jdbcType=VARCHAR}, #{houseOtherDanger,jdbcType=VARCHAR}, #{houseStatus,jdbcType=VARCHAR},
+        #{auditConfirm,jdbcType=VARCHAR})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.surveyvisit.domain.CheckForm">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_survey_visit_check_form
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="abnormalInfoId != null">
+                abnormal_info_id,
+            </if>
+            <if test="lodgePerson != null">
+                lodge_person,
+            </if>
+            <if test="houseRent != null">
+                house_rent,
+            </if>
+            <if test="otherReason != null">
+                other_reason,
+            </if>
+            <if test="checkPerson != null">
+                check_person,
+            </if>
+            <if test="visitPerson != null">
+                visit_person,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="personDanger != null">
+                person_danger,
+            </if>
+            <if test="houseDanger != null">
+                house_danger,
+            </if>
+            <if test="judgeDanger != null">
+                Judge_danger,
+            </if>
+            <if test="personOtherDanger != null">
+                person_other_danger,
+            </if>
+            <if test="houseOtherDanger != null">
+                house_other_danger,
+            </if>
+            <if test="houseStatus != null">
+                house_status,
+            </if>
+            <if test="auditConfirm != null">
+                audit_confirm,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=BIGINT},
+            <if test="abnormalInfoId != null">
+                #{abnormalInfoId,jdbcType=BIGINT},
+            </if>
+            <if test="lodgePerson != null">
+                #{lodgePerson,jdbcType=VARCHAR},
+            </if>
+            <if test="houseRent != null">
+                #{houseRent,jdbcType=VARCHAR},
+            </if>
+            <if test="otherReason != null">
+                #{otherReason,jdbcType=VARCHAR},
+            </if>
+            <if test="checkPerson != null">
+                #{checkPerson,jdbcType=VARCHAR},
+            </if>
+            <if test="visitPerson != null">
+                #{visitPerson,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="personDanger != null">
+                #{personDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseDanger != null">
+                #{houseDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeDanger != null">
+                #{judgeDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="personOtherDanger != null">
+                #{personOtherDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseOtherDanger != null">
+                #{houseOtherDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="auditConfirm != null">
+                #{auditConfirm,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.surveyvisit.domain.CheckForm">
+        update app_survey_visit_check_form
+        <set>
+            <if test="abnormalInfoId != null">
+                abnormal_info_id = #{abnormalInfoId,jdbcType=BIGINT},
+            </if>
+            <if test="lodgePerson != null">
+                lodge_person = #{lodgePerson,jdbcType=VARCHAR},
+            </if>
+            <if test="houseRent != null">
+                house_rent = #{houseRent,jdbcType=VARCHAR},
+            </if>
+            <if test="otherReason != null">
+                other_reason = #{otherReason,jdbcType=VARCHAR},
+            </if>
+            <if test="checkPerson != null">
+                check_person = #{checkPerson,jdbcType=VARCHAR},
+            </if>
+            <if test="visitPerson != null">
+                visit_person = #{visitPerson,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="personDanger != null">
+                person_danger = #{personDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseDanger != null">
+                house_danger = #{houseDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeDanger != null">
+                Judge_danger = #{judgeDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="personOtherDanger != null">
+                person_other_danger = #{personOtherDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseOtherDanger != null">
+                house_other_danger = #{houseOtherDanger,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="auditConfirm != null">
+                audit_confirm = #{auditConfirm,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.surveyvisit.domain.CheckForm">
+      update app_survey_visit_check_form
+        set abnormal_info_id = #{abnormalInfoId,jdbcType=BIGINT},
+          lodge_person = #{lodgePerson,jdbcType=VARCHAR},
+          house_rent = #{houseRent,jdbcType=VARCHAR},
+          other_reason = #{otherReason,jdbcType=VARCHAR},
+          check_person = #{checkPerson,jdbcType=VARCHAR},
+          visit_person = #{visitPerson,jdbcType=VARCHAR},
+          create_time = #{createTime,jdbcType=TIMESTAMP},
+          update_time = #{updateTime,jdbcType=TIMESTAMP},
+          person_danger = #{personDanger,jdbcType=VARCHAR},
+          house_danger = #{houseDanger,jdbcType=VARCHAR},
+          Judge_danger = #{judgeDanger,jdbcType=VARCHAR},
+          person_other_danger = #{personOtherDanger,jdbcType=VARCHAR},
+          house_other_danger = #{houseOtherDanger,jdbcType=VARCHAR},
+          house_status = #{houseStatus,jdbcType=VARCHAR},
+          audit_confirm = #{auditConfirm,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--根据小区名和电话查询房屋总id-->
+    <select id="queryBycommunityNameAndPhone" parameterType="java.util.Map" resultType="java.lang.Long">
+      select ai.pro_coll_id from app_survey_visit_check_form af INNER JOIN app_survey_visit_abnormal_info ai
+      ON af.abnormal_info_id = ai.id
+      where ai.community_name = #{communityName,jdbcType=VARCHAR} AND
+      (af.lodge_person like CONCAT('%', #{phone,jdbcType=VARCHAR}, '%') or af.house_rent like CONCAT('%', #{phone,jdbcType=VARCHAR}, '%')
+    </select>
+    <select id="queryPieCountByDate"  resultMap="BaseResultMap">
+          select * from app_survey_visit_check_form m
+		  where m.id=( SELECT MAX(id) FROM app_survey_visit_check_form n where n.abnormal_info_id=m.abnormal_info_id)
+		  and EXISTS(
+	        select * from app_survey_visit_abnormal_info b
+	        where b.solve_status='0' and m.abnormal_info_id = b.id
+	        <if test="start != null">
+	                <![CDATA[ AND b.judge_abnormal_time >= #{start} ]]>
+	        </if>
+		    <if test="end != null">
+		            <![CDATA[ AND b.judge_abnormal_time <= #{end} ]]>
+		    </if>
+	      )
+		  GROUP BY m.abnormal_info_id
+    </select>
+    <select id="queryPieCompose" resultMap="BaseResultMap">
+        select mm.community_name,m.* from app_survey_visit_check_form m,app_survey_visit_abnormal_info mm
+	    where
+	    m.abnormal_info_id = mm.id
+	    and m.id=( SELECT MAX(id) FROM app_survey_visit_check_form n where n.abnormal_info_id=m.abnormal_info_id)
+	    and EXISTS( select * from app_survey_visit_abnormal_info b where b.solve_status='0' and m.abnormal_info_id = b.id)
+	    GROUP BY m.abnormal_info_id
+    </select>
+    <select id="queryPieComposeBy" resultMap="BaseResultMap">
+        select mm.community_name,m.* from app_survey_visit_abnormal_info mm,app_survey_visit_check_form m
+	    where mm.solve_status='0' and m.abnormal_info_id = mm.id
+	    and mm.community_name = #{communityName,jdbcType=VARCHAR}
+        <if test="apartmentNum != null and apartmentNum != ''">
+                and mm.apartment_num = #{apartmentNum,jdbcType=VARCHAR}
+        </if>
+	    and m.id=( SELECT MAX(id) FROM app_survey_visit_check_form n where n.abnormal_info_id=m.abnormal_info_id)
+    </select>
+    <select id="queryPieListCountBy"  resultMap="BaseResultMap">
+          select * from app_survey_visit_check_form m
+		  where m.id=( SELECT MAX(id) FROM app_survey_visit_check_form n where n.abnormal_info_id=m.abnormal_info_id)
+		  and EXISTS(
+	        select * from app_survey_visit_abnormal_info b
+	        where b.solve_status='0' and m.abnormal_info_id = b.id
+	        and b.community_name = #{communityName,jdbcType=VARCHAR}
+	        <if test="apartmentNum != null and apartmentNum != ''">
+	                and b.apartment_num = #{apartmentNum,jdbcType=VARCHAR}
+	        </if>
+	      )
+    </select>
+</mapper>

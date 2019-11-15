@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.HouseBasicInfoMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="pro_coll_id" jdbcType="BIGINT" property="proCollId"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+        <result column="community_district" jdbcType="VARCHAR" property="communityDistrict"/>
+        <result column="apartment_num" jdbcType="VARCHAR" property="apartmentNum"/>
+        <result column="house_unit" jdbcType="VARCHAR" property="houseUnit"/>
+        <result column="room_num" jdbcType="VARCHAR" property="roomNum"/>
+        <result column="house_status" jdbcType="VARCHAR" property="houseStatus"/>
+        <result column="landlord_name" jdbcType="VARCHAR" property="landlordName"/>
+        <result column="landlord_id" jdbcType="VARCHAR" property="landlordId"/>
+        <result column="landlord_phone" jdbcType="VARCHAR" property="landlordPhone"/>
+        <result column="property_right_certificate" jdbcType="VARCHAR" property="propertyRightCertificate"/>
+        <result column="resident_name" jdbcType="VARCHAR" property="residentName"/>
+        <result column="resident_id" jdbcType="VARCHAR" property="residentId"/>
+        <result column="resident_sex" jdbcType="VARCHAR" property="residentSex"/>
+        <result column="birth_date" jdbcType="VARCHAR" property="birthDate"/>
+        <result column="contact_info" jdbcType="VARCHAR" property="contactInfo"/>
+        <result column="street_name" jdbcType="VARCHAR" property="streetName"/>
+        <result column="neighborhood_committee" jdbcType="VARCHAR" property="neighborhoodCommittee"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, pro_coll_id, community_name, community_district, apartment_num, house_unit, room_num,
+        house_status, landlord_name, landlord_id, landlord_phone, property_right_certificate,
+        resident_name, resident_id, resident_sex, birth_date, contact_info, street_name, neighborhood_committee
+    </sql>
+
+    <select id="selectByProCollId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_houses_basic_infromation_da
+        where pro_coll_id = #{proCollId,jdbcType=BIGINT}
+    </select>
+
+    <select id="selectHouseCountByCommunityName" parameterType="java.lang.String"  resultType="java.lang.Integer">
+        select
+        count(1)
+        from app_houses_basic_infromation_da
+        where community_name = #{communityName,jdbcType=VARCHAR}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from app_houses_basic_infromation_da
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_houses_basic_infromation_da (id, pro_coll_id, community_name,
+        community_district, apartment_num, house_unit,
+        room_num, house_status, landlord_name,
+        landlord_id, landlord_phone, property_right_certificate,
+        resident_name, resident_id, resident_sex,
+        birth_date, contact_info)
+        values (#{id,jdbcType=BIGINT}, #{proCollId,jdbcType=BIGINT}, #{communityName,jdbcType=VARCHAR},
+        #{communityDistrict,jdbcType=VARCHAR}, #{apartmentNum,jdbcType=VARCHAR}, #{houseUnit,jdbcType=VARCHAR},
+        #{roomNum,jdbcType=VARCHAR}, #{houseStatus,jdbcType=VARCHAR}, #{landlordName,jdbcType=VARCHAR},
+        #{landlordId,jdbcType=VARCHAR}, #{landlordPhone,jdbcType=VARCHAR}, #{propertyRightCertificate,jdbcType=VARCHAR},
+        #{residentName,jdbcType=VARCHAR}, #{residentId,jdbcType=VARCHAR}, #{residentSex,jdbcType=VARCHAR},
+        #{birthDate,jdbcType=VARCHAR}, #{contactInfo,jdbcType=VARCHAR})
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_houses_basic_infromation_da
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="proCollId != null">
+                pro_coll_id,
+            </if>
+            <if test="communityName != null">
+                community_name,
+            </if>
+            <if test="communityDistrict != null">
+                community_district,
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num,
+            </if>
+            <if test="houseUnit != null">
+                house_unit,
+            </if>
+            <if test="roomNum != null">
+                room_num,
+            </if>
+            <if test="houseStatus != null">
+                house_status,
+            </if>
+            <if test="landlordName != null">
+                landlord_name,
+            </if>
+            <if test="landlordId != null">
+                landlord_id,
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone,
+            </if>
+            <if test="propertyRightCertificate != null">
+                property_right_certificate,
+            </if>
+            <if test="residentName != null">
+                resident_name,
+            </if>
+            <if test="residentId != null">
+                resident_id,
+            </if>
+            <if test="residentSex != null">
+                resident_sex,
+            </if>
+            <if test="birthDate != null">
+                birth_date,
+            </if>
+            <if test="contactInfo != null">
+                contact_info,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=BIGINT},
+            <if test="proCollId != null">
+                #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificate != null">
+                #{propertyRightCertificate,jdbcType=VARCHAR},
+            </if>
+            <if test="residentName != null">
+                #{residentName,jdbcType=VARCHAR},
+            </if>
+            <if test="residentId != null">
+                #{residentId,jdbcType=VARCHAR},
+            </if>
+            <if test="residentSex != null">
+                #{residentSex,jdbcType=VARCHAR},
+            </if>
+            <if test="birthDate != null">
+                #{birthDate,jdbcType=VARCHAR},
+            </if>
+            <if test="contactInfo != null">
+                #{contactInfo,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        update app_houses_basic_infromation_da
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificate != null">
+                property_right_certificate = #{propertyRightCertificate,jdbcType=VARCHAR},
+            </if>
+            <if test="residentName != null">
+                resident_name = #{residentName,jdbcType=VARCHAR},
+            </if>
+            <if test="residentId != null">
+                resident_id = #{residentId,jdbcType=VARCHAR},
+            </if>
+            <if test="residentSex != null">
+                resident_sex = #{residentSex,jdbcType=VARCHAR},
+            </if>
+            <if test="birthDate != null">
+                birth_date = #{birthDate,jdbcType=VARCHAR},
+            </if>
+            <if test="contactInfo != null">
+                contact_info = #{contactInfo,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByProCollIdSelective" parameterType="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        update app_houses_basic_infromation_da
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificate != null">
+                property_right_certificate = #{propertyRightCertificate,jdbcType=VARCHAR},
+            </if>
+            <if test="residentName != null">
+                resident_name = #{residentName,jdbcType=VARCHAR},
+            </if>
+            <if test="residentId != null">
+                resident_id = #{residentId,jdbcType=VARCHAR},
+            </if>
+            <if test="residentSex != null">
+                resident_sex = #{residentSex,jdbcType=VARCHAR},
+            </if>
+            <if test="birthDate != null">
+                birth_date = #{birthDate,jdbcType=VARCHAR},
+            </if>
+            <if test="contactInfo != null">
+                contact_info = #{contactInfo,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where pro_coll_id = #{proCollId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.houseinfo.domain.HouseBasicInfo">
+        update app_houses_basic_infromation_da
+        set pro_coll_id = #{proCollId,jdbcType=BIGINT},
+          community_name = #{communityName,jdbcType=VARCHAR},
+          community_district = #{communityDistrict,jdbcType=VARCHAR},
+          apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+          house_unit = #{houseUnit,jdbcType=VARCHAR},
+          room_num = #{roomNum,jdbcType=VARCHAR},
+          house_status = #{houseStatus,jdbcType=VARCHAR},
+          landlord_name = #{landlordName,jdbcType=VARCHAR},
+          landlord_id = #{landlordId,jdbcType=VARCHAR},
+          landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+          property_right_certificate = #{propertyRightCertificate,jdbcType=VARCHAR},
+          resident_name = #{residentName,jdbcType=VARCHAR},
+          resident_id = #{residentId,jdbcType=VARCHAR},
+          resident_sex = #{residentSex,jdbcType=VARCHAR},
+          birth_date = #{birthDate,jdbcType=VARCHAR},
+          contact_info = #{contactInfo,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--根据小区名和电话查询房屋总id-->
+    <select id="queryBycommunityNameAndPhone" parameterType="java.util.Map" resultType="java.lang.Long">
+      select pro_coll_id from app_survey_visit_check_form
+      where community_name = like CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%') AND
+      contact_info like CONCAT('%', #{phone,jdbcType=VARCHAR}, '%')
+    </select>
+</mapper>

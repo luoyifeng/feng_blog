@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.HouseQueryInfoMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="pro_coll_id" jdbcType="BIGINT" property="proCollId"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+        <result column="community_district" jdbcType="VARCHAR" property="communityDistrict"/>
+        <result column="apartment_num" jdbcType="VARCHAR" property="apartmentNum"/>
+        <result column="house_unit" jdbcType="VARCHAR" property="houseUnit"/>
+        <result column="room_num" jdbcType="VARCHAR" property="roomNum"/>
+        <result column="house_status" jdbcType="VARCHAR" property="houseStatus"/>
+        <result column="landlord_name" jdbcType="VARCHAR" property="landlordName"/>
+        <result column="landlord_id" jdbcType="VARCHAR" property="landlordId"/>
+        <result column="landlord_phone" jdbcType="VARCHAR" property="landlordPhone"/>
+        <result column="property_right_certificate_number" jdbcType="VARCHAR" property="propertyRightCertificateNumber"/>
+        <result column="Judge_danger" jdbcType="VARCHAR" property="houseDanger"/>
+        <result column="house_special_mark" jdbcType="VARCHAR" property="houseSpecialMark"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, pro_coll_id, community_name, community_district, apartment_num, house_unit, room_num,
+        house_status, landlord_name, landlord_id, landlord_phone, property_right_certificate_number
+    </sql>
+
+    <sql id="WhereCondition">
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="proCollId != null">
+                AND pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+            <if test="communityName != null and communityName != ''">
+                AND community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="1 == 1">
+                AND position('L' in community_district) = 0
+            </if>
+            <if test="apartmentNum != null and apartmentNum != ''">
+                AND apartment_num LIKE CONCAT('%', #{apartmentNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="roomNum != null and roomNum != ''">
+                AND (room_num LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%') OR house_unit LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="houseStatus != null and houseStatus != ''">
+                AND house_status = #{houseStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="landlordName != null and landlordName != ''">
+                AND landlord_name LIKE CONCAT('%', #{landlordName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="landlordId != null and landlordId != ''">
+                AND landlord_id LIKE CONCAT('%', #{landlordId,jdbcType=VARCHAR}, '%')
+            </if>
+        </trim>
+    </sql>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_houses_infromation_query_da
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.houseinfo.model.HouseQueryRequest" resultMap="BaseResultMap">
+        select
+        aa.id, aa.pro_coll_id, aa.community_name, aa.community_district, aa.apartment_num, aa.house_unit, aa.room_num,
+        aa.house_status, aa.landlord_name, aa.landlord_id, aa.landlord_phone, aa.property_right_certificate_number,cc.Judge_danger,bb.house_special_mark
+        from app_houses_infromation_query_da aa 
+        left join app_survey_visit_abnormal_info bb on bb.pro_coll_id=aa.pro_coll_id
+        left join (select c1.abnormal_info_id from app_survey_visit_check_form c1  where c1.id=( SELECT MAX(id) FROM app_survey_visit_check_form c2 where c1.abnormal_info_id=c2.abnormal_info_id)) cc on cc.abnormal_info_id=bb.id
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="proCollId != null">
+                AND aa.pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+            <if test="communityName != null and communityName != ''">
+                AND aa.community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="1 == 1">
+                AND position('L' in aa.community_district) = 0
+            </if>
+            <if test="apartmentNum != null and apartmentNum != ''">
+                AND aa.apartment_num LIKE CONCAT('%', #{apartmentNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="roomNum != null and roomNum != ''">
+                AND (aa.room_num LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%') OR aa.house_unit LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="houseStatus != null and houseStatus != ''">
+                AND aa.house_status = #{houseStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="landlordName != null and landlordName != ''">
+                AND aa.landlord_name LIKE CONCAT('%', #{landlordName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="landlordId != null and landlordId != ''">
+                AND aa.landlord_id LIKE CONCAT('%', #{landlordId,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="houseDanger != null and houseDanger == 1">
+                AND cc.Judge_danger =1
+	        </if>
+	        <if test="houseDanger != null and houseDanger == 2">
+	            AND cc.Judge_danger =0
+	        </if>
+        </trim>
+        group by aa.pro_coll_id
+        ORDER BY aa.community_name,aa.apartment_num+0
+        limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+    </select>
+
+    <select id="queryCountByCondition" parameterType="com.jd.service.houseinfo.model.HouseQueryRequest" resultType="java.lang.Integer">
+        select
+        count(distinct aa.pro_coll_id)
+        from app_houses_infromation_query_da aa 
+        left join app_survey_visit_abnormal_info bb on bb.pro_coll_id=aa.pro_coll_id
+        left join (select c1.abnormal_info_id from app_survey_visit_check_form c1  where c1.id=( SELECT MAX(id) FROM app_survey_visit_check_form c2 where c1.abnormal_info_id=c2.abnormal_info_id)) cc on cc.abnormal_info_id=bb.id
+        
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <if test="proCollId != null">
+                AND aa.pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+            <if test="communityName != null and communityName != ''">
+                AND aa.community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="1 == 1">
+                AND position('L' in aa.community_district) = 0
+            </if>
+            <if test="apartmentNum != null and apartmentNum != ''">
+                AND aa.apartment_num LIKE CONCAT('%', #{apartmentNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="roomNum != null and roomNum != ''">
+                AND (aa.room_num LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%') OR aa.house_unit LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="houseStatus != null and houseStatus != ''">
+                AND aa.house_status = #{houseStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="landlordName != null and landlordName != ''">
+                AND aa.landlord_name LIKE CONCAT('%', #{landlordName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="landlordId != null and landlordId != ''">
+                AND aa.landlord_id LIKE CONCAT('%', #{landlordId,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="houseDanger != null and houseDanger == 1">
+                AND cc.Judge_danger =1
+	        </if>
+	        <if test="houseDanger != null and houseDanger == 2">
+	            AND cc.Judge_danger =0
+	        </if>
+        </trim>
+    </select>
+
+    <select id="queryHouseCompose" resultType="java.util.Map">
+        SELECT house_status AS hs, COUNT(*) AS cnt FROM app_houses_infromation_query_da GROUP BY house_status
+    </select>
+
+    <select id="queryHouseComposeByCommunity" resultType="java.util.Map">
+        SELECT community_name AS communityName, house_status AS hs, COUNT(*) AS cnt FROM app_houses_infromation_query_da GROUP BY community_name, house_status
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from app_houses_infromation_query_da
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_houses_infromation_query_da (id, pro_coll_id, community_name,
+        community_district, apartment_num, house_unit,
+        room_num, house_status, landlord_name,
+        landlord_id, landlord_phone, property_right_certificate_number
+        )
+        values (#{id,jdbcType=BIGINT}, #{proCollId,jdbcType=BIGINT}, #{communityName,jdbcType=VARCHAR},
+        #{communityDistrict,jdbcType=VARCHAR}, #{apartmentNum,jdbcType=VARCHAR}, #{houseUnit,jdbcType=VARCHAR},
+        #{roomNum,jdbcType=VARCHAR}, #{houseStatus,jdbcType=VARCHAR}, #{landlordName,jdbcType=VARCHAR},
+        #{landlordId,jdbcType=VARCHAR}, #{landlordPhone,jdbcType=VARCHAR},
+        #{propertyRightCertificateNumber,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_houses_infromation_query_da
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="proCollId != null">
+                pro_coll_id,
+            </if>
+            <if test="communityName != null">
+                community_name,
+            </if>
+            <if test="communityDistrict != null">
+                community_district,
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num,
+            </if>
+            <if test="houseUnit != null">
+                house_unit,
+            </if>
+            <if test="roomNum != null">
+                room_num,
+            </if>
+            <if test="houseStatus != null">
+                house_status,
+            </if>
+            <if test="landlordName != null">
+                landlord_name,
+            </if>
+            <if test="landlordId != null">
+                landlord_id,
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone,
+            </if>
+            <if test="propertyRightCertificateNumber != null">
+                property_right_certificate_number,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=BIGINT},
+            <if test="proCollId != null">
+                #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificateNumber != null">
+                #{propertyRightCertificateNumber,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        update app_houses_infromation_query_da
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificateNumber != null">
+                property_right_certificate_number = #{propertyRightCertificateNumber,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByProCollIdSelective" parameterType="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        update app_houses_infromation_query_da
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="propertyRightCertificateNumber != null">
+                property_right_certificate_number = #{propertyRightCertificateNumber,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where pro_coll_id = #{proCollId,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.houseinfo.domain.HouseQueryInfo">
+        update app_houses_infromation_query_da
+        set pro_coll_id = #{proCollId,jdbcType=BIGINT},
+          community_name = #{communityName,jdbcType=VARCHAR},
+          community_district = #{communityDistrict,jdbcType=VARCHAR},
+          apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+          house_unit = #{houseUnit,jdbcType=VARCHAR},
+          room_num = #{roomNum,jdbcType=VARCHAR},
+          house_status = #{houseStatus,jdbcType=VARCHAR},
+          landlord_name = #{landlordName,jdbcType=VARCHAR},
+          landlord_id = #{landlordId,jdbcType=VARCHAR},
+          landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+          property_right_certificate_number = #{propertyRightCertificateNumber,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=BIGINT}
+  </update>
+  <select id="queryHouseComposeBy" resultType="java.util.Map">
+        SELECT a.community_name AS communityName, count(*) AS total,count(house_status='自住' or null) AS self, count(house_status='出租' or null) AS rent, count(house_status='空置' or null) AS empty,count(house_status='待核' or null) AS todo
+        FROM app_houses_infromation_query_da a
+        WHERE community_name = #{communityName,jdbcType=VARCHAR}
+        <if test="apartmentNum != null and apartmentNum != ''">
+                and apartment_num = #{apartmentNum,jdbcType=VARCHAR}
+        </if>
+    </select>
+    <select id="queryHouseListByTypeAndC"  resultMap="BaseResultMap">
+	      select
+	      *
+	      from app_houses_infromation_query_da
+	      WHERE community_name = #{communityName,jdbcType=VARCHAR}
+          <if test="apartmentNum != null and apartmentNum != ''">
+                and apartment_num = #{apartmentNum,jdbcType=VARCHAR}
+          </if>
+          <if test="type != null and type !=''">
+		      <choose>
+	            <when test="type =='self'">
+	                  and house_status='自住'
+	            </when >
+	            <when test="type =='rent'">
+	                  and house_status='出租'
+	            </when >
+	             <when test="type =='empty'">
+	                  and house_status='空置'
+	            </when >
+	            <when test="type =='todo'">
+	                 and house_status='待核'
+	            </when >
+	            <otherwise>
+	            </otherwise>
+	        </choose>
+		  </if>
+    </select>
+</mapper>

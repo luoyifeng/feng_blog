@@ -1,0 +1,642 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jd.popc.mapper.AbnormalInfoMapper">
+    <resultMap id="BaseResultMap" type="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <id column="pro_coll_id" jdbcType="BIGINT" property="proCollId"/>
+        <result column="abnormal_type" jdbcType="VARCHAR" property="abnormalType"/>
+        <result column="abnormal_info" jdbcType="VARCHAR" property="abnormalInfo"/>
+        <result column="community_district" jdbcType="VARCHAR" property="communityDistrict"/>
+        <result column="community_name" jdbcType="VARCHAR" property="communityName"/>
+        <result column="apartment_num" jdbcType="VARCHAR" property="apartmentNum"/>
+        <result column="house_unit" jdbcType="VARCHAR" property="houseUnit"/>
+        <result column="room_num" jdbcType="VARCHAR" property="roomNum"/>
+        <result column="house_status" jdbcType="VARCHAR" property="houseStatus"/>
+        <result column="landlord_name" jdbcType="VARCHAR" property="landlordName"/>
+        <result column="landlord_id" jdbcType="VARCHAR" property="landlordId"/>
+        <result column="landlord_phone" jdbcType="VARCHAR" property="landlordPhone"/>
+        <result column="judge_abnormal_time" jdbcType="VARCHAR" property="judgeAbnormalTime"/>
+        <result column="officer_name" jdbcType="VARCHAR" property="officerName"/>
+        <result column="officer_phone" jdbcType="VARCHAR" property="officerPhone"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="solve_status" jdbcType="TINYINT" property="solveStatus"/>
+
+        <result column="house_special_mark" jdbcType="VARCHAR" property="houseSpecialMark"/>
+        <result column="shopping_times" jdbcType="BIGINT" property="shoppingTimes"/>
+        <result column="special_goods" jdbcType="VARCHAR" property="specialGoods"/>
+        <result column="standard_score" jdbcType="VARCHAR" property="standardScore"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, pro_coll_id, abnormal_type, abnormal_info, community_district, community_name, apartment_num, house_unit, room_num, house_status,
+        landlord_name, landlord_id, landlord_phone, judge_abnormal_time, officer_name, officer_phone,create_time, update_time,solve_status,
+        house_special_mark,shopping_times,standard_score
+    </sql>
+
+    <sql id="WhereCondition"> /*未处理异常*/
+        <trim prefix="where" prefixOverrides="AND|OR">
+            <!--<if test="id != null">
+                AND id = #{id,jdbcType=BIGINT}
+            </if>-->
+            <if test="proCollId != null">
+                AND pro_coll_id = #{proCollId,jdbcType=BIGINT}
+            </if>
+            <if test="abnormalType != null and abnormalType != ''">
+                AND abnormal_type = #{abnormalType,jdbcType=VARCHAR}
+            </if>
+            <if test="communityName != null and communityName != ''">
+                AND community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <!--<if test="communityDistrict != null and communityDistrict != ''">
+                AND community_district LIKE CONCAT('%', #{communityDistrict,jdbcType=VARCHAR}, '%')
+            </if>-->
+            <if test="apartmentNum != null and apartmentNum != ''">
+                AND apartment_num LIKE CONCAT('%', #{apartmentNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="houseUnit != null and houseUnit != ''">
+                AND house_unit LIKE CONCAT('%', #{houseUnit,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="solveStatus != null">
+                AND solve_status = #{solveStatus,jdbcType=TINYINT}
+            </if>
+            <if test="roomNum != null and roomNum != ''">
+                AND room_num LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="communityNames != null and communityNames.size() > 0">
+                AND community_name IN
+                <foreach item='communityName' index='index' collection='communityNames' open='(' separator=',' close=')'>
+                    #{communityName,jdbcType=VARCHAR}
+                </foreach>
+            </if>
+            <if test="judgeAbnormalTime != null and judgeAbnormalTime != ''">
+                AND DATE_FORMAT(judge_abnormal_time, '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')
+            </if>
+            <if test="landlordName != null and landlordName != ''">
+                AND landlord_name LIKE CONCAT('%', #{landlordName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test='houseSpecialMark != null and houseSpecialMark == "无"'>
+                AND (house_special_mark is null OR house_special_mark = '无' OR house_special_mark = '')
+            </if>
+            <if test="houseSpecialMarkList != null and houseSpecialMarkList.size() > 0">
+                AND
+                <foreach item='houseSpecialMark' index='index' collection='houseSpecialMarkList' open='(' separator='AND' close=')'>
+                    house_special_mark like CONCAT('%', #{houseSpecialMark,jdbcType=VARCHAR}, '%')
+                </foreach>
+            </if>
+            <!--<if test="houseStatus != null and houseStatus != ''">
+                AND house_status = #{houseStatus,jdbcType=VARCHAR}
+            </if>
+            <if test="landlordId != null and landlordId != ''">
+                AND landlord_id = #{landlordId,jdbcType=VARCHAR}
+            </if>
+            <if test="landlordPhone != null and landlordPhone != ''">
+                AND landlord_phone = #{landlordPhone,jdbcType=VARCHAR}
+            </if>
+            <if test="officerName != null and officerName != ''">
+                AND officer_name = #{officerName,jdbcType=VARCHAR}
+            </if>
+            <if test="officerPhone != null and officerPhone != ''">
+                AND officer_phone = #{officerPhone,jdbcType=VARCHAR}
+            </if>
+            <if test="createTime != null">
+                AND create_time = #{createTime,jdbcType=TIMESTAMP}
+            </if>
+            <if test="updateTime != null">
+                AND update_time = #{updateTime,jdbcType=TIMESTAMP}
+            </if>-->
+        </trim>
+    </sql>
+
+    <sql id="WhereConditionForProcessed"> /*已处理异常*/
+        <trim prefix="where" prefixOverrides="AND|OR">
+            AND af.audit_confirm = 1 AND ai.solve_status = 0
+            <if test="communityName != null and communityName != ''">
+                AND ai.community_name LIKE CONCAT('%', #{communityName,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="communityNames != null and communityNames.size() > 0">
+                AND ai.community_name IN
+                <foreach item='communityName' index='index' collection='communityNames' open='(' separator=',' close=')'>
+                    #{communityName,jdbcType=VARCHAR}
+                </foreach>
+            </if>
+            <if test="apartmentNum != null and apartmentNum != ''">
+                AND ai.apartment_num LIKE CONCAT('%', #{apartmentNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="houseUnit != null and houseUnit != ''">
+                AND ai.house_unit LIKE CONCAT('%', #{houseUnit,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="roomNum != null and roomNum != ''">
+                AND ai.room_num LIKE CONCAT('%', #{roomNum,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="abnormalType != null and abnormalType != ''">
+                AND ai.abnormal_type = #{abnormalType,jdbcType=VARCHAR}
+            </if>
+            <if test="commonName != null and commonName != ''">
+                AND (ai.landlord_name LIKE CONCAT('%', #{commonName,jdbcType=VARCHAR}, '%') OR
+                af.lodge_person LIKE CONCAT('%', #{commonName,jdbcType=VARCHAR}, '%') OR
+                af.house_rent LIKE CONCAT('%', #{commonName,jdbcType=VARCHAR}, '%'))
+            </if>
+            <if test="houseSpecialMarkList != null and houseSpecialMarkList.size() > 0">
+                AND
+                <foreach item='houseSpecialMark' index='index' collection='houseSpecialMarkList' open='(' separator='AND' close=')'>
+                    ai.house_special_mark like CONCAT('%', #{houseSpecialMark,jdbcType=VARCHAR}, '%')
+                </foreach>
+            </if>
+            <if test="judgeDanger != null and judgeDanger != ''">
+                AND af.Judge_danger = #{judgeDanger,jdbcType=VARCHAR}
+            </if>
+            <if test="visitPerson != null and visitPerson != ''">
+                AND af.visit_person LIKE CONCAT('%', #{visitPerson,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="checkPerson != null and checkPerson != ''">
+                AND af.check_person LIKE CONCAT('%', #{checkPerson,jdbcType=VARCHAR}, '%')
+            </if>
+            <if test="visitDate != null and visitDate != ''">
+                AND DATE_FORMAT(af.create_time, '%Y-%m-%d') = DATE_FORMAT(#{visitDate,jdbcType=TIMESTAMP}, '%Y-%m-%d')
+            </if>
+        </trim>
+    </sql>
+    <!--已处理的走访-->
+    <select id="queryAbnormalForProcessed" parameterType="com.jd.service.surveyvisit.model.AbnormalInfoRequest" resultMap="BaseResultMap">
+        select ai.id, ai.pro_coll_id, ai.abnormal_type, ai.abnormal_info, ai.community_district, ai.community_name, ai.apartment_num,
+        ai.house_unit, ai.room_num, ai.house_status, ai.landlord_name, ai.landlord_id, ai.landlord_phone, ai.judge_abnormal_time,
+        ai.officer_name, ai.officer_phone,ai.create_time, ai.update_time,ai.solve_status, ai.house_special_mark,ai.shopping_times,ai.standard_score
+        from app_survey_visit_abnormal_info ai LEFT JOIN app_survey_visit_check_form af ON af.abnormal_info_id = ai.id
+        <include refid="WhereConditionForProcessed"/>
+        <if test="currentPage != null">
+            limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <select id="queryAbnormalCountForProcessed" parameterType="com.jd.service.surveyvisit.model.AbnormalInfoRequest" resultType="java.lang.Integer">
+        select count(*)
+        from app_survey_visit_abnormal_info ai LEFT JOIN app_survey_visit_check_form af ON af.abnormal_info_id = ai.id
+        <include refid="WhereConditionForProcessed"/>
+    </select>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_abnormal_info
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+
+    <select id="queryByCondition" parameterType="com.jd.service.surveyvisit.model.AbnormalInfoRequest" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_abnormal_info
+        <include refid="WhereCondition"/>
+        <if test="currentPage != null">
+            limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+        </if>
+    </select>
+
+    <select id="queryByConditionForInit" parameterType="com.jd.service.surveyvisit.model.AbnormalInfoRequest" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_survey_visit_abnormal_info group by pro_coll_id
+        <if test="currentPage != null">
+            limit #{currentPage, jdbcType=INTEGER}, #{offset, jdbcType=INTEGER}
+        </if>
+    </select>
+    
+    <select id="queryCountByCondition" parameterType="com.jd.service.surveyvisit.model.AbnormalInfoRequest" resultType="java.lang.Integer">
+        select
+        count(*)
+        from app_survey_visit_abnormal_info
+        <include refid="WhereCondition"/>
+    </select>
+
+    <select id="queryAbnormalTrend" resultType="java.util.Map">
+        select DATE_FORMAT(judge_abnormal_time, '%Y-%m') AS ym, count(*) AS cnt
+        from app_survey_visit_abnormal_info
+        where DATE_FORMAT(judge_abnormal_time, '%Y-%m-%d') BETWEEN DATE_SUB(NOW(), INTERVAL 1 YEAR) AND NOW()
+        group by DATE_FORMAT(judge_abnormal_time, '%Y-%m')
+    </select>
+
+    <select id="top10" resultType="com.jd.service.summary.model.AbnormalTrend">
+        SELECT community_name AS communityName, COUNT(*) AS number
+        FROM app_survey_visit_abnormal_info
+        WHERE DATE_FORMAT(judge_abnormal_time, '%Y-%m-%d') BETWEEN DATE_SUB(NOW(), INTERVAL 1 YEAR) AND NOW()
+        GROUP BY community_name
+        ORDER BY COUNT(*) DESC
+        limit 10
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        delete from app_survey_visit_abnormal_info
+        where id = #{id,jdbcType=BIGINT}
+    </delete>
+
+    <insert id="insert" parameterType="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_survey_visit_abnormal_info (id, pro_coll_id, abnormal_type, abnormal_info, community_district, community_name,
+        apartment_num, house_unit, room_num,
+        house_status, landlord_name, landlord_id,
+        landlord_phone, judge_abnormal_time, officer_name,
+        officer_phone, create_time, update_time,solve_status
+        )
+        values (#{id,jdbcType=BIGINT}, #{proCollId,jdbcType=BIGINT}, #{abnormalType,jdbcType=VARCHAR}, #{abnormalInfo,jdbcType=VARCHAR}, #{communityDistrict,jdbcType=VARCHAR}, #{communityName,jdbcType=VARCHAR},
+        #{apartmentNum,jdbcType=VARCHAR}, #{houseUnit,jdbcType=VARCHAR}, #{roomNum,jdbcType=VARCHAR},
+        #{houseStatus,jdbcType=VARCHAR}, #{landlordName,jdbcType=VARCHAR}, #{landlordId,jdbcType=VARCHAR},
+        #{landlordPhone,jdbcType=VARCHAR}, #{judgeAbnormalTime,jdbcType=VARCHAR}, #{officerName,jdbcType=VARCHAR},
+        #{officerPhone,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{solveStatus, jdbcType=TINYINT}
+        )
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into app_survey_visit_abnormal_info
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            id,
+            <if test="proCollId != null">
+                pro_coll_id,
+            </if>
+            <if test="abnormalType != null">
+                abnormal_type,
+            </if>
+            <if test="abnormalInfo != null">
+                abnormal_info,
+            </if>
+            <if test="communityDistrict != null">
+                community_district,
+            </if>
+            <if test="communityName != null">
+                community_name,
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num,
+            </if>
+            <if test="houseUnit != null">
+                house_unit,
+            </if>
+            <if test="roomNum != null">
+                room_num,
+            </if>
+            <if test="houseStatus != null">
+                house_status,
+            </if>
+            <if test="landlordName != null">
+                landlord_name,
+            </if>
+            <if test="landlordId != null">
+                landlord_id,
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone,
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time,
+            </if>
+            <if test="officerName != null">
+                officer_name,
+            </if>
+            <if test="officerPhone != null">
+                officer_phone,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+            <if test="updateTime != null">
+                update_time,
+            </if>
+            <if test="solveStatus != null">
+                solve_status,
+            </if>
+            <if test="shoppingTimes != null">
+                shopping_times,
+            </if>
+            <if test="standardScore != null">
+                standard_score,
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            #{id,jdbcType=BIGINT},
+            <if test="proCollId != null">
+                #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="abnormalType != null">
+                #{abnormalType,jdbcType=VARCHAR},
+            </if>
+            <if test="abnormalInfo != null">
+                #{abnormalInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="communityName != null">
+                #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="officerName != null">
+                #{officerName,jdbcType=VARCHAR},
+            </if>
+            <if test="officerPhone != null">
+                #{officerPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="solveStatus != null">
+                #{solveStatus,jdbcType=TINYINT},
+            </if>
+            <if test="shoppingTimes != null">
+                #{shoppingTimes,jdbcType=TINYINT},
+            </if>
+            <if test="standardScore != null">
+                #{standardScore,jdbcType=TINYINT},
+            </if>
+            <if test="houseSpecialMark != null">
+                #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </trim>
+        on duplicate key update solve_status=#{solveStatus, jdbcType=TINYINT},judge_abnormal_time=#{judgeAbnormalTime,jdbcType=VARCHAR},
+        officer_name=#{officerName,jdbcType=VARCHAR},officer_phone=#{officerPhone,jdbcType=VARCHAR}, update_time=now(), abnormal_info=#{abnormalInfo,jdbcType=VARCHAR},
+        abnormal_type=#{abnormalType,jdbcType=VARCHAR},shopping_times=#{shoppingTimes,jdbcType=VARCHAR},standard_score=#{standardScore,jdbcType=VARCHAR},
+        house_special_mark=#{houseSpecialMark,jdbcType=VARCHAR}
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        update app_survey_visit_abnormal_info
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="abnormalType != null">
+                abnormal_type = #{abnormalType,jdbcType=VARCHAR},
+            </if>
+            <if test="abnormalInfo != null">
+                abnormal_info = #{abnormalInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="officerName != null">
+                officer_name = #{officerName,jdbcType=VARCHAR},
+            </if>
+            <if test="officerPhone != null">
+                officer_phone = #{officerPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="solveStatus != null">
+                solve_status = #{solveStatus,jdbcType=TINYINT},
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark = #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <update id="updateByProCollIdSelective" parameterType="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        update app_survey_visit_abnormal_info
+        <set>
+            <if test="proCollId != null">
+                pro_coll_id = #{proCollId,jdbcType=BIGINT},
+            </if>
+            <if test="abnormalType != null">
+                abnormal_type = #{abnormalType,jdbcType=VARCHAR},
+            </if>
+            <if test="abnormalInfo != null">
+                abnormal_info = #{abnormalInfo,jdbcType=VARCHAR},
+            </if>
+            <if test="communityDistrict != null">
+                community_district = #{communityDistrict,jdbcType=VARCHAR},
+            </if>
+            <if test="communityName != null">
+                community_name = #{communityName,jdbcType=VARCHAR},
+            </if>
+            <if test="apartmentNum != null">
+                apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseUnit != null">
+                house_unit = #{houseUnit,jdbcType=VARCHAR},
+            </if>
+            <if test="roomNum != null">
+                room_num = #{roomNum,jdbcType=VARCHAR},
+            </if>
+            <if test="houseStatus != null">
+                house_status = #{houseStatus,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordName != null">
+                landlord_name = #{landlordName,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordId != null">
+                landlord_id = #{landlordId,jdbcType=VARCHAR},
+            </if>
+            <if test="landlordPhone != null">
+                landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="judgeAbnormalTime != null">
+                judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+            </if>
+            <if test="officerName != null">
+                officer_name = #{officerName,jdbcType=VARCHAR},
+            </if>
+            <if test="officerPhone != null">
+                officer_phone = #{officerPhone,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="solveStatus != null">
+                solve_status = #{solveStatus,jdbcType=TINYINT},
+            </if>
+            <if test="houseSpecialMark != null">
+                house_special_mark = #{houseSpecialMark,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where pro_coll_id = #{proCollId,jdbcType=BIGINT}
+    </update>
+
+
+    <update id="updateByPrimaryKey" parameterType="com.jd.service.surveyvisit.domain.AbnormalInfo">
+        update app_survey_visit_abnormal_info
+        set pro_coll_id = #{proCollId,jdbcType=BIGINT},abnormal_type = #{abnormalType,jdbcType=VARCHAR},
+          abnormal_info = #{abnormalInfo,jdbcType=VARCHAR},community_district = #{communityDistrict,jdbcType=VARCHAR},
+          community_name = #{communityName,jdbcType=VARCHAR},
+          apartment_num = #{apartmentNum,jdbcType=VARCHAR},
+          house_unit = #{houseUnit,jdbcType=VARCHAR},
+          room_num = #{roomNum,jdbcType=VARCHAR},
+          house_status = #{houseStatus,jdbcType=VARCHAR},
+          landlord_name = #{landlordName,jdbcType=VARCHAR},
+          landlord_id = #{landlordId,jdbcType=VARCHAR},
+          landlord_phone = #{landlordPhone,jdbcType=VARCHAR},
+          judge_abnormal_time = #{judgeAbnormalTime,jdbcType=VARCHAR},
+          officer_name = #{officerName,jdbcType=VARCHAR},
+          officer_phone = #{officerPhone,jdbcType=VARCHAR},
+          create_time = #{createTime,jdbcType=TIMESTAMP},
+          update_time = #{updateTime,jdbcType=TIMESTAMP},
+          solve_status = #{solveStatus,jdbcType=TINYINT}
+        where id = #{id,jdbcType=BIGINT}
+    </update>
+
+    <!--更新房屋购物次数-->
+    <update id="updateShoppingTime" parameterType="com.jd.service.shoppinginfo.domain.ShoppingInfoVo">
+        update app_survey_visit_abnormal_info
+        set shopping_times = shopping_times + 1
+        where pro_coll_id = #{proCollId,jdbcType=VARCHAR}
+    </update>
+<select id="queryHouseCountByDate"  resultType="HashMap">
+	      select
+	      count((solve_status=0 and house_status='自住' )or null) AS total0,
+	      count((solve_status=0 and house_status='出租' )or null) AS total1,
+	      count((solve_status=0 and house_status='空置' )or null) AS total2,
+	      count(solve_status=1  or null) AS total3
+	      from app_survey_visit_abnormal_info
+	      where 1=1
+	      <if test="start != null">
+	                <![CDATA[ AND judge_abnormal_time >= #{start} ]]>
+	      </if>
+	      <if test="end != null">
+	                <![CDATA[ AND judge_abnormal_time <= #{end} ]]>
+	      </if>
+    </select>
+    <select id="queryCountByDate"  resultType="HashMap">
+	      select
+	      count(*) AS total0,
+	      count(solve_status=0 or null) AS total1,
+	      count(solve_status=1 or null) AS total2
+	      from app_survey_visit_abnormal_info
+	      where 1=1
+	      <if test="start != null">
+	                <![CDATA[ AND judge_abnormal_time >= #{start} ]]>
+	      </if>
+	      <if test="end != null">
+	                <![CDATA[ AND judge_abnormal_time <= #{end} ]]>
+	      </if>
+    </select>
+    <select id="queryTotalListByType"  resultMap="BaseResultMap">
+        select
+        *
+        from app_survey_visit_abnormal_info
+        where 1=1
+          <if test="type != null and type !=''">
+		      <choose>
+	            <when test="type =='总房屋异常数'">
+
+	            </when >
+	            <when test="type =='走访核实数'">
+	                 and solve_status=0
+	            </when >
+	             <when test="type =='待访问核实数'">
+	                 and solve_status=1
+	            </when >
+	            <otherwise>
+	            </otherwise>
+	        </choose>
+		  </if>
+	      <if test="start != null">
+	                <![CDATA[ AND judge_abnormal_time >= #{start} ]]>
+	      </if>
+	      <if test="end != null">
+	                <![CDATA[ AND judge_abnormal_time <= #{end} ]]>
+	      </if>
+    </select>
+    <select id="queryHouseTotalListByType"  resultMap="BaseResultMap">
+	      select
+	      *
+	      from app_survey_visit_abnormal_info
+	      where 1=1
+          <if test="type != null and type !=''">
+		      <choose>
+	            <when test="type =='走访反馈为自住'">
+	                 and solve_status=0 and house_status='自住'
+	            </when >
+	            <when test="type =='走访反馈为出租'">
+	                 and solve_status=0 and house_status='出租'
+	            </when >
+	             <when test="type =='走访反馈为空置'">
+	                 and solve_status=0 and house_status='空置'
+	            </when >
+	            <when test="type =='走访反馈为待核'">
+	                 and solve_status=1
+	            </when >
+	            <otherwise>
+	            </otherwise>
+	        </choose>
+		  </if>
+	      <if test="start != null">
+	                <![CDATA[ AND judge_abnormal_time >= #{start} ]]>
+	      </if>
+	      <if test="end != null">
+	                <![CDATA[ AND judge_abnormal_time <= #{end} ]]>
+	      </if>
+    </select>
+    <select id="queryTotalSummaryList"  resultMap="BaseResultMap">
+        select
+        *
+        from app_survey_visit_abnormal_info
+        where  DATE_FORMAT(judge_abnormal_time, '%Y-%m-%d') = DATE_FORMAT(NOW(), '%Y-%m-%d')
+        ORDER BY create_time DESC
+    </select>
+</mapper>
